@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observatorio Electoral Perú 2026 — Módulo PLN en Tiempo Real (ISO/IEC 25010)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+        :root {
+            --bg-primary: #0b1120;
+            --bg-secondary: #111c33;
+            --bg-card: #16223d;
+            --bg-input: #0d1629;
+            --border-color: #283a5e;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --pos-color: #10b981;
+            --pos-bg: rgba(16, 185, 129, 0.16);
+            --neg-color: #f43f5e;
+            --neg-bg: rgba(244, 63, 94, 0.16);
+            --neu-color: #f59e0b;
+            --neu-bg: rgba(245, 158, 11, 0.16);
+            --focus-ring: #60a5fa;
+        }
+
+        body.high-contrast {
+            --bg-primary: #000000;
+            --bg-secondary: #0a0a0a;
+            --bg-card: #121212;
+            --bg-input: #050505;
+            --border-color: #ffffff;
+            --text-primary: #ffffff;
+            --text-secondary: #f1f5f9;
+            --text-muted: #e2e8f0;
+            --accent-blue: #38bdf8;
+            --pos-color: #4ade80;
+            --neg-color: #fb7185;
+            --neu-color: #facc15;
+            --focus-ring: #facc15;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 18px 24px;
+            min-height: 100vh;
+        }
+
+        /* Skip link para Accesibilidad ISO 25010 / WCAG 2.1 AA */
+        .skip-link {
+            position: absolute;
+            left: -9999px;
+            top: 8px;
+            background: #facc15;
+            color: #000;
+            padding: 8px 14px;
+            font-weight: 700;
+            border-radius: 6px;
+            z-index: 9999;
+        }
+        .skip-link:focus {
+            left: 16px;
+        }
+
+        :focus-visible {
+            outline: 3px solid var(--focus-ring);
+            outline-offset: 2px;
+        }
+
+        .app-shell {
+            max-width: 1480px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Header */
+        .top-header {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .brand-box {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .peru-flag {
+            width: 38px;
+            height: 28px;
+            border-radius: 5px;
+            background: linear-gradient(90deg, #d91023 33.3%, #ffffff 33.3%, #ffffff 66.6%, #d91023 66.6%);
+            border: 1px solid rgba(255,255,255,0.35);
+            flex-shrink: 0;
+        }
+
+        .brand-title h1 {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+        }
+
+        .brand-title p {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+        }
+
+        .toolbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--pos-color);
+            border: 1px solid var(--pos-color);
+        }
+
+        .live-indicator.paused {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--neu-color);
+            border-color: var(--neu-color);
+        }
+
+        .pulse-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 1.3s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(1.25); }
+        }
+
+        .btn {
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 8px 13px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .btn:hover {
+            border-color: var(--accent-blue);
+            background: #1e2f53;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            border-color: #3b82f6;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: var(--neg-color);
+            color: #fecdd3;
+        }
+
+        .btn-danger:hover {
+            background: rgba(244, 63, 94, 0.3);
+        }
+
+        .select-ctrl {
+            font-family: inherit;
+            font-size: 12.5px;
+            font-weight: 600;
+            padding: 7px 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+        }
+
+        /* KPI Summary Strip */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .kpi-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 13px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .kpi-label {
+            font-size: 11.5px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .kpi-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .kpi-sub {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+        }
+
+        /* Candidate Cards Row */
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .cand-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            border-top: 4px solid var(--accent-blue);
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .cand-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .cand-name {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .cand-party {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .cand-share-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 18px;
+            font-weight: 800;
+            padding: 3px 9px;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.14);
+            border: 1px solid rgba(59, 130, 246, 0.45);
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.35s ease;
+        }
+
+        .sentiment-triplet {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .sent-pill {
+            padding: 4px 6px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .sent-pos { background: var(--pos-bg); color: var(--pos-color); border: 1px solid rgba(16,185,129,0.35); }
+        .sent-neu { background: var(--neu-bg); color: var(--neu-color); border: 1px solid rgba(245,158,11,0.35); }
+        .sent-neg { background: var(--neg-bg); color: var(--neg-color); border: 1px solid rgba(244,63,94,0.35); }
+
+        /* Main Content 2 Columns */
+        .main-workspace {
+            display: grid;
+            grid-template-columns: 1.38fr 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .panel-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .panel-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* Canvas Chart */
+        .chart-container {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px;
+        }
+
+        canvas#trendChart {
+            width: 100%;
+            height: 250px;
+            display: block;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+
+        .legend-swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* Manual NLP Analyzer Form (Prevención de Errores ISO 25010) */
+        .nlp-sandbox {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 11px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .form-group label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .textarea-wrap {
+            position: relative;
+        }
+
+        textarea#customPostText {
+            width: 100%;
+            min-height: 68px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        textarea#customPostText.input-error {
+            border-color: var(--neg-color);
+            box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.25);
+        }
+
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .char-counter {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .validation-msg {
+            font-size: 12px;
+            font-weight: 600;
+            min-height: 18px;
+        }
+
+        .validation-msg.error { color: var(--neg-color); }
+        .validation-msg.success { color: var(--pos-color); }
+
+        /* Live Stream Feed */
+        .feed-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .feed-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            max-height: 525px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .post-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 10px;
+            padding: 11px 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .post-item.post-pos { border-left-color: var(--pos-color); }
+        .post-item.post-neg { border-left-color: var(--neg-color); }
+        .post-item.post-neu { border-left-color: var(--neu-color); }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11.5px;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .post-author {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .post-text {
+            font-size: 12.8px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        .token-pos {
+            background: rgba(16, 185, 129, 0.22);
+            color: #6ee7b7;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .token-neg {
+            background: rgba(244, 63, 94, 0.22);
+            color: #fda4af;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        .post-tags {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .tag-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 5px;
+        }
+
+        /* Modal Confirmación & Glosario ISO 25010 */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .modal-backdrop.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            max-width: 560px;
+            width: 100%;
+            padding: 20px 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-card h2 {
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .modal-card p, .modal-card li {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .modal-card ul {
+            padding-left: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 1180px) {
+            .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+            .candidates-grid { grid-template-columns: repeat(2, 1fr); }
+            .main-workspace { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <a href="#main-content" class="skip-link">Saltar al contenido principal (Accesibilidad ISO/IEC 25010)</a>
+
+    <div class="app-shell">
+        <!-- HEADER SUPERIOR CON CONTROLES DE OPERABILIDAD Y ACCESIBILIDAD -->
+        <header class="top-header" role="banner">
+            <div class="brand-box">
+                <div class="peru-flag" role="img" aria-label="Bandera del Perú"></div>
+                <div class="brand-title">
+                    <h1>Observatorio Electoral Perú 2026 — Motor PLN en Tiempo Real</h1>
+                    <p>Ingesta de Redes Sociales, Clasificador Léxico-Contextual VADER-ES y Estimación Dinámica de Intención de Voto</p>
+                </div>
+            </div>
+
+            <div class="toolbar-controls" role="toolbar" aria-label="Controles de simulación y accesibilidad">
+                <div id="liveStatusBadge" class="live-indicator" aria-live="polite">
+                    <span class="pulse-dot"></span>
+                    <span id="liveStatusText">INGESTA EN VIVO (ACTIVA)</span>
+                </div>
+
+                <button id="btnToggleStream" class="btn btn-primary" type="button" aria-pressed="true" title="Atajo de teclado: Barra Espaciadora">
+                    ⏸️ Pausar Stream
+                </button>
+
+                <label for="speedSelect" class="sr-only" style="font-size:12px;color:var(--text-secondary);">Cadencia:</label>
+                <select id="speedSelect" class="select-ctrl" aria-label="Velocidad de ingesta de publicaciones">
+                    <option value="2200">Cadencia: Normal (2.2s)</option>
+                    <option value="1100" selected>Cadencia: Rápida (1.1s)</option>
+                    <option value="600">Cadencia: Intensiva (0.6s)</option>
+                </select>
+
+                <button id="btnContrast" class="btn" type="button" aria-pressed="false" title="Alternar modo de Alto Contraste WCAG AAA">
+                    🌓 Alto Contraste
+                </button>
+
+                <button id="btnHelpModal" class="btn" type="button" aria-haspopup="dialog">
+                    ℹ️ Metodología PLN
+                </button>
+
+                <button id="btnResetModal" class="btn btn-danger" type="button" aria-haspopup="dialog">
+                    🔄 Reiniciar
+                </button>
+            </div>
+        </header>
+
+        <!-- TIRA DE KPIS GLOBALES -->
+        <section class="kpi-grid" aria-label="Indicadores clave del flujo electoral en tiempo real">
+            <div class="kpi-card">
+                <div class="kpi-label"><span>Publicaciones Procesadas</span><span>📡</span></div>
+                <div class="kpi-value" id="kpiTotalPosts">0</div>
+                <div class="kpi-sub" id="kpiRateSub">X/Twitter, TikTok, Facebook, Reddit</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label"><span>Polaridad Global (VADER-ES)</span><span>🧠</span></div>
+                <div class="kpi-value" id="kpiAvgCompound">+0.000</div>
+                <div class="kpi-sub" id="kpiSentimentRatio">Balance Neto en Tiempo Real</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label"><span>Líder Estimado Actual</span><span>🏆</span></div>
+                <div class="kpi-value" id="kpiLeaderName" style="font-size:17px;">Calculando...</div>
+                <div class="kpi-sub" id="kpiLeaderShare">Intención ponderada por sentimiento</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label"><span>Tasa de Sentimiento Positivo</span><span>🟢</span></div>
+                <div class="kpi-value" id="kpiPosPct" style="color:var(--pos-color);">0.0%</div>
+                <div class="kpi-sub">Publicaciones con score &ge; +0.15</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label"><span>Tasa de Rechazo / Crítica</span><span>🔴</span></div>
+                <div class="kpi-value" id="kpiNegPct" style="color:var(--neg-color);">0.0%</div>
+                <div class="kpi-sub">Publicaciones con score &le; -0.15</div>
+            </div>
+        </section>
+
+        <!-- TARJETAS DE CANDIDATOS Y PORCENTAJE ESTIMADO EN VIVO -->
+        <section class="candidates-grid" id="candidatesContainer" aria-label="Estimación electoral y sentimiento por candidato">
+            <!-- Renderizado dinámicamente por JS -->
+        </section>
+
+        <!-- ÁREA PRINCIPAL: GRÁFICO DE EVOLUCIÓN + SANDBOX PLN + STREAM EN VIVO -->
+        <main id="main-content" class="main-workspace">
+            <!-- COLUMNA IZQUIERDA: EVOLUCIÓN DE TENDENCIAS Y ANALIZADOR INTERACTIVO -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <section class="panel-box" aria-labelledby="chartTitle">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title" id="chartTitle">📈 Evolución en Vivo de Intención de Voto Estimada (%)</h2>
+                            <p class="panel-subtitle">Actualización continua según volumen de menciones y polaridad neta del flujo PLN (últimas 25 ventanas)</p>
+                        </div>
+                        <span class="tag-badge" style="background:rgba(59,130,246,0.15);color:#93c5fd;border:1px solid #3b82f6;">
+                            Modelo: Bayesiano + VADER-ES
+                        </span>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="trendChart" width="760" height="250" role="img" aria-label="Gráfico de líneas con la evolución de porcentaje estimado por candidato"></canvas>
+                        <div class="chart-legend" id="chartLegend"></div>
+                    </div>
+                </section>
+
+                <!-- SANDBOX INTERACTIVO DE PLN CON PREVENCIÓN DE ERRORES (ISO/IEC 25010) -->
+                <section class="panel-box" aria-labelledby="sandboxTitle">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="panel-title" id="sandboxTitle">🧪 Laboratorio de Inyección y Prueba de Sentimiento (PLN en Español Peruano)</h2>
+                            <p class="panel-subtitle">Escribe o selecciona una publicación para evaluar el tokenizador, negaciones, intensificadores y jerga electoral</p>
+                        </div>
+                        <button id="btnLoadSample" class="btn" type="button">✨ Cargar Ejemplo</button>
+                    </div>
+
+                    <form id="customPostForm" class="nlp-sandbox" novalidate>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="inputCandidate">Candidato Mencionado</label>
+                                <select id="inputCandidate" class="select-ctrl" required>
+                                    <option value="C1">Elena Quispe (Frente Progreso Andino)</option>
+                                    <option value="C2">Marco Villarán (Alianza Orden y Futuro)</option>
+                                    <option value="C3">Sofía Mendoza (Perú Digital y Verde)</option>
+                                    <option value="C4">Carlos Alarcón (Coalición Descentralista)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputRegion">Macrorregión Origen</label>
+                                <select id="inputRegion" class="select-ctrl" required>
+                                    <option value="Lima y Callao">Lima y Callao</option>
+                                    <option value="Sur (Arequipa/Cusco/Puno)">Sur (Arequipa/Cusco/Puno)</option>
+                                    <option value="Norte (La Libertad/Piura)">Norte (La Libertad/Piura)</option>
+                                    <option value="Centro (Junín/Huánuco)">Centro (Junín/Huánuco)</option>
+                                    <option value="Oriente (Loreto/San Martín)">Oriente (Loreto/San Martín)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputSource">Red Social</label>
+                                <select id="inputSource" class="select-ctrl" required>
+                                    <option value="X (Twitter)">X (Twitter)</option>
+                                    <option value="TikTok Perú">TikTok Perú</option>
+                                    <option value="Facebook Live">Facebook Live</option>
+                                    <option value="Reddit r/PERU">Reddit r/PERU</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group textarea-wrap">
+                            <label for="customPostText">Texto de la Publicación (mínimo 12 caracteres, máximo 280)</label>
+                            <textarea id="customPostText" maxlength="280" placeholder="Ej.: Excelente propuesta de Elena Quispe para formalizar microempresas y frenar la extorsión con tecnología..."></textarea>
+                        </div>
+
+                        <div class="form-footer">
+                            <div>
+                                <div id="validationFeedback" class="validation-msg" role="alert" aria-live="assertive"></div>
+                                <span id="charCounter" class="char-counter">0 / 280 caracteres</span>
+                            </div>
+                            <button type="submit" class="btn btn-primary">🚀 Analizar con PLN e Inyectar al Stream</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+            <!-- COLUMNA DERECHA: STREAM EN TIEMPO REAL CON RESALTADO LÉXICO -->
+            <section class="panel-box" aria-labelledby="streamTitle">
+                <div class="panel-header">
+                    <div>
+                        <h2 class="panel-title" id="streamTitle">💬 Flujo de Publicaciones Analizadas en Vivo</h2>
+                        <p class="panel-subtitle">Tokens en <span class="token-pos">verde (positivos)</span> y <span class="token-neg">rojo (negativos)</span> detectados por el motor</p>
+                    </div>
+                </div>
+
+                <div class="feed-filters" role="group" aria-label="Filtros del flujo de publicaciones">
+                    <select id="filterCandidate" class="select-ctrl" aria-label="Filtrar por candidato">
+                        <option value="ALL">Todos los Candidatos (4)</option>
+                        <option value="C1">Elena Quispe</option>
+                        <option value="C2">Marco Villarán</option>
+                        <option value="C3">Sofía Mendoza</option>
+                        <option value="C4">Carlos Alarcón</option>
+                    </select>
+
+                    <select id="filterSentiment" class="select-ctrl" aria-label="Filtrar por polaridad de sentimiento">
+                        <option value="ALL">Todas las Polaridades</option>
+                        <option value="POS">🟢 Solo Positivos (&ge; +0.15)</option>
+                        <option value="NEU">🟡 Solo Neutrales (-0.15 a +0.15)</option>
+                        <option value="NEG">🔴 Solo Negativos (&le; -0.15)</option>
+                    </select>
+                </div>
+
+                <div id="liveFeedContainer" class="feed-list" role="log" aria-live="polite" aria-relevant="additions">
+                    <!-- Posts insertados dinámicamente -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL 1: METODOLOGÍA PLN (INTELIGIBILIDAD ISO/IEC 25010) -->
+    <div id="helpModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="helpModalTitle">
+        <div class="modal-card">
+            <h2 id="helpModalTitle">🧠 Metodología del Clasificador PLN Electoral (VADER-ES + Bayes)</h2>
+            <p>Este módulo procesa publicaciones de redes sociales en tiempo real aplicando análisis de sentimiento léxico-contextual adaptado al español peruano:</p>
+            <ul>
+                <li><strong>Diccionario Polarizado &amp; Regionalismos:</strong> Pondera términos positivos (<em>propuesta, honesto, seguridad, inversión, chamba, firme</em>) y negativos (<em>corrupción, demagogia, extorsión, mentira, argolla, incapaz</em>).</li>
+                <li><strong>Reglas Sintácticas de Negación e Intensificación:</strong> Detecta adverbios de negación (<em>no, nunca, jamás, tampoco</em>) que invierten la polaridad de la ventana siguiente, e intensificadores (<em>muy, totalmente, sumamente</em>) que amplifican el puntaje en un 35%.</li>
+                <li><strong>Score Compuesto Normalizado:</strong> Calcula <code>S &isin; [-1.0, +1.0]</code>. Se clasifica como <strong>Positivo</strong> si <code>S &ge; +0.15</code>, <strong>Negativo</strong> si <code>S &le; -0.15</code> y <strong>Neutral</strong> en el rango intermedio.</li>
+                <li><strong>Estimación Electoral Dinámica:</strong> Combina el prior base de cada candidato con su volumen de menciones y su índice de sentimiento neto suavizado exponencialmente.</li>
+            </ul>
+            <div class="modal-actions">
+                <button id="btnCloseHelp" class="btn btn-primary" type="button">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CONFIRMACIÓN DE REINICIO (PROTECCIÓN CONTRA ERRORES ISO/IEC 25010) -->
+    <div id="resetModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
+        <div class="modal-card">
+            <h2 id="resetModalTitle">⚠️ Confirmar Reinicio de Simulación Electoral</h2>
+            <p>¿Estás seguro de que deseas reiniciar las series de tiempo y vaciar el historial de publicaciones procesadas? Esta acción restablecerá los contadores al estado base inicial.</p>
+            <div class="modal-actions">
+                <button id="btnCancelReset" class="btn" type="button">Cancelar</button>
+                <button id="btnConfirmReset" class="btn btn-danger" type="button">Sí, Reiniciar Todo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. DEFINICIÓN DE CANDIDATOS Y LÉXICO DE SENTIMIENTO EN ESPAÑOL PERUANO
+        // =========================================================================
+        const CANDIDATES = {
+            C1: {
+                id: "C1",
+                name: "Elena Quispe",
+                party: "Frente Progreso Andino",
+                color: "#3b82f6",
+                priorShare: 29.5,
+                mentions: 18,
+                pos: 11,
+                neu: 4,
+                neg: 3,
+                sumScore: 4.8,
+                currentShare: 29.5
+            },
+            C2: {
+                id: "C2",
+                name: "Marco Villarán",
+                party: "Alianza Orden y Futuro",
+                color: "#10b981",
+                priorShare: 27.0,
+                mentions: 17,
+                pos: 9,
+                neu: 4,
+                neg: 4,
+                sumScore: 3.1,
+                currentShare: 27.0
+            },
+            C3: {
+                id: "C3",
+                name: "Sofía Mendoza",
+                party: "Perú Digital y Verde",
+                color: "#f59e0b",
+                priorShare: 23.5,
+                mentions: 15,
+                pos: 8,
+                neu: 4,
+                neg: 3,
+                sumScore: 2.9,
+                currentShare: 23.5
+            },
+            C4: {
+                id: "C4",
+                name: "Carlos Alarcón",
+                party: "Coalición Descentralista",
+                color: "#a855f7",
+                priorShare: 20.0,
+                mentions: 14,
+                pos: 6,
+                neu: 4,
+                neg: 4,
+                sumScore: 1.2,
+                currentShare: 20.0
+            }
+        };
+
+        const LEXICON_POS = {
+            "excelente": 2.4, "solida": 1.8, "sólida": 1.8, "propuesta": 1.4, "propuestas": 1.4,
+            "seguridad": 1.6, "empleo": 1.8, "chamba": 1.9, "honesto": 2.2, "honesta": 2.2,
+            "transparencia": 2.1, "transparente": 2.0, "inversion": 1.7, "inversión": 1.7,
+            "modernizar": 1.7, "digital": 1.3, "crecimiento": 1.8, "apoyo": 1.5, "liderazgo": 1.9,
+            "convence": 1.9, "claro": 1.4, "clara": 1.4, "firme": 1.7, "preparada": 2.0,
+            "preparado": 2.0, "solucion": 1.8, "solución": 1.8, "avance": 1.6, "integridad": 2.2,
+            "esperanza": 1.8, "viable": 1.7, "serio": 1.6, "seria": 1.6, "descentralizacion": 1.7,
+            "descentralización": 1.7, "reactivar": 1.8, "tecnologia": 1.5, "tecnología": 1.5,
+            "eficiente": 1.8, "mejor": 1.6, "ganador": 1.7, "ganadora": 1.7
+        };
+
+        const LEXICON_NEG = {
+            "corrupcion": -2.6, "corrupción": -2.6, "corrupto": -2.7, "mentira": -2.3, "mentiras": -2.3,
+            "demagogia": -2.2, "populismo": -2.0, "populista": -1.9, "inseguridad": -2.1, "extorsion": -2.4,
+            "extorsión": -2.4, "crisis": -1.8, "incapaz": -2.3, "improvisacion": -2.2, "improvisación": -2.2,
+            "argolla": -2.1, "estafa": -2.5, "duda": -1.3, "dudas": -1.3, "retroceso": -2.1,
+            "promesas": -1.2, "vacias": -1.8, "vacías": -1.8, "caos": -2.2, "desempleo": -2.0,
+            "inflacion": -1.9, "inflación": -1.9, "delincuencia": -2.2, "rechazo": -2.0, "peor": -2.1,
+            "falso": -2.1, "falsa": -2.1, "blindaje": -2.2, "impunidad": -2.4, "fracaso": -2.3,
+            "evade": -1.8, "escandalo": -2.3, "escándalo": -2.3
+        };
+
+        const NEGATIONS = new Set(["no", "nunca", "jamas", "jamás", "sin", "ni", "tampoco", "falta", "ausencia", "carece", "poca", "pocas"]);
+        const INTENSIFIERS = new Set(["muy", "super", "súper", "totalmente", "sumamente", "bastante", "demasiado", "gran"]);
+
+        function analyzeSpanishSentiment(rawText) {
+            const clean = rawText
+                .toLowerCase()
+                .replace(/[.,/#!$%^&*;:{}=\-_`~()¿?¡!"']/g, " ");
+            const words = clean.split(/\s+/).filter(Boolean);
+
+            let totalScore = 0;
+            const posMatched = [];
+            const negMatched = [];
+
+            for (let i = 0; i < words.length; i++) {
+                const w = words[i];
+                let val = 0;
+                if (Object.prototype.hasOwnProperty.call(LEXICON_POS, w)) {
+                    val = LEXICON_POS[w];
+                } else if (Object.prototype.hasOwnProperty.call(LEXICON_NEG, w)) {
+                    val = LEXICON_NEG[w];
+                }
+
+                if (val !== 0) {
+                    const prev1 = i > 0 ? words[i - 1] : "";
+                    const prev2 = i > 1 ? words[i - 2] : "";
+                    if (INTENSIFIERS.has(prev1)) {
+                        val *= 1.35;
+                    }
+                    if (NEGATIONS.has(prev1) || NEGATIONS.has(prev2)) {
+                        val *= -0.85;
+                    }
+                    totalScore += val;
+                    if (val > 0) posMatched.push(w);
+                    else negMatched.push(w);
+                }
+            }
+
+            // Normalización tipo VADER: score / sqrt(score^2 + alpha)
+            const compound = totalScore === 0 ? 0 : totalScore / Math.sqrt(totalScore * totalScore + 11.0);
+            let label = "NEU";
+            if (compound >= 0.15) label = "POS";
+            else if (compound <= -0.15) label = "NEG";
+
+            return {
+                compound: Number(compound.toFixed(3)),
+                label,
+                posMatched,
+                negMatched
+            };
+        }
+
+        function highlightTokensHTML(text) {
+            return text.replace(/([a-zA-ZáéíóúÁÉÍÓÚñÑ]+)/g, (match) => {
+                const low = match.toLowerCase();
+                if (Object.prototype.hasOwnProperty.call(LEXICON_POS, low)) {
+                    return `<span class="token-pos">${match}</span>`;
+                }
+                if (Object.prototype.hasOwnProperty.call(LEXICON_NEG, low)) {
+                    return `<span class="token-neg">${match}</span>`;
+                }
+                return match;
+            });
+        }
+
+        // =========================================================================
+        // 2. CORPUS REALISTA DE PUBLICACIONES ELECTORALES PERÚ 2026
+        // =========================================================================
+        const STREAM_CORPUS = [
+            { cand: "C1", region: "Sur (Arequipa/Cusco/Puno)", source: "X (Twitter)", user: "@andino_emprende", text: "Muy sólida la propuesta de Elena Quispe en el debate para llevar inversión en infraestructura hídrica y crédito agrario transparente." },
+            { cand: "C2", region: "Lima y Callao", source: "TikTok Perú", user: "@ciudadano_lima26", text: "Marco Villarán plantea mano firme y tecnología para frenar la extorsión y devolver la seguridad a los pequeños comerciantes." },
+            { cand: "C3", region: "Norte (La Libertad/Piura)", source: "X (Twitter)", user: "@tech_trujillo", text: "Excelente liderazgo de Sofía Mendoza explicando cómo digitalizar trámites y eliminar la corrupción en compras públicas." },
+            { cand: "C4", region: "Centro (Junín/Huánuco)", source: "Facebook Live", user: "@voz_huancayo", text: "Carlos Alarcón presenta un plan viable de descentralización fiscal y empleo joven para reactivar la sierra central." },
+            { cand: "C2", region: "Sur (Arequipa/Cusco/Puno)", source: "Reddit r/PERU", user: "u/analista_sur", text: "Preocupa que Marco Villarán no explique cómo financiará sus promesas; mucha demagogia y pocas cifras claras." },
+            { cand: "C1", region: "Lima y Callao", source: "X (Twitter)", user: "@mype_gamarra", text: "Elena Quispe genera dudas en el sector empresarial por la improvisación de su equipo técnico frente a la inflación." },
+            { cand: "C3", region: "Oriente (Loreto/San Martín)", source: "TikTok Perú", user: "@amazonia_verde", text: "Sofía Mendoza demuestra integridad y una solución seria contra la minería ilegal y la deforestación en la selva." },
+            { cand: "C4", region: "Norte (La Libertad/Piura)", source: "Facebook Live", user: "@piura_opina", text: "Lamentablemente Carlos Alarcón arrastra cuestionamientos de argolla regional y falta de transparencia en su gestión." },
+            { cand: "C1", region: "Centro (Junín/Huánuco)", source: "TikTok Perú", user: "@jovenes_junin", text: "Totalmente preparado el equipo de Elena Quispe para generar chamba formal y modernizar las postas médicas." },
+            { cand: "C2", region: "Norte (La Libertad/Piura)", source: "X (Twitter)", user: "@seguridad_norte", text: "En Trujillo necesitamos orden urgente; la propuesta de inteligencia policial de Marco Villarán sí convence." },
+            { cand: "C3", region: "Lima y Callao", source: "Reddit r/PERU", user: "u/data_peru26", text: "El debate dejó en claro que Sofía Mendoza tiene el diagnóstico más honesto y eficiente sobre educación pública." },
+            { cand: "C4", region: "Oriente (Loreto/San Martín)", source: "X (Twitter)", user: "@iquitos_informa", text: "Carlos Alarcón participó en el foro regional presentando el cronograma de carreteras y conectividad fluvial." },
+            { cand: "C1", region: "Sur (Arequipa/Cusco/Puno)", source: "Facebook Live", user: "@radio_altiplano", text: "Gran apoyo ciudadano a Elena Quispe en Cusco por su compromiso con la transparencia y el turismo sostenible." },
+            { cand: "C3", region: "Centro (Junín/Huánuco)", source: "X (Twitter)", user: "@observador_centro", text: "A Sofía Mendoza le falta presencia territorial en provincias; sus propuestas suenan lejanas a la crisis rural." },
+            { cand: "C2", region: "Lima y Callao", source: "X (Twitter)", user: "@economista_pe", text: "Sólida exposición de Marco Villarán sobre estabilidad macroeconómica e inversión privada sin populismo." },
+            { cand: "C4", region: "Sur (Arequipa/Cusco/Puno)", source: "TikTok Perú", user: "@arequipa_debate", text: "Buen avance de Carlos Alarcón al proponer destrabar proyectos agroindustriales con integridad y control ciudadano." }
+        ];
+
+        // =========================================================================
+        // 3. ESTADO REACTIVO DEL OBSERVATORIO Y SERIES DE TIEMPO
+        // =========================================================================
+        let isStreaming = true;
+        let streamIntervalMs = 1100;
+        let timerHandle = null;
+        let corpusCursor = 0;
+
+        let allProcessedPosts = [];
+        let totalIngestedCount = 0;
+        let timeSeriesHistory = []; // Array de snapshots { tick, C1, C2, C3, C4 }
+        let tickCounter = 0;
+
+        function recalculateElectoralShares() {
+            // Modelo híbrido: combina prior demoscópico + volumen de menciones + sentimiento neto
+            let rawWeights = {};
+            let sumWeights = 0;
+
+            Object.values(CANDIDATES).forEach((c) => {
+                const netSentimentRatio = (c.pos - c.neg) / Math.max(c.mentions, 1);
+                const mentionMomentum = Math.log1p(c.mentions) * 2.2;
+                const sentimentBoost = netSentimentRatio * 8.5 + (c.sumScore / Math.max(c.mentions, 1)) * 4.0;
+                const w = Math.max(5.0, c.priorShare + mentionMomentum + sentimentBoost);
+                rawWeights[c.id] = w;
+                sumWeights += w;
+            });
+
+            Object.values(CANDIDATES).forEach((c) => {
+                c.currentShare = Number(((rawWeights[c.id] / sumWeights) * 100.0).toFixed(1));
+            });
+
+            // Ajuste fino para que sume exactamente 100.0%
+            const totalPct = Object.values(CANDIDATES).reduce((acc, c) => acc + c.currentShare, 0);
+            const diff = Number((100.0 - totalPct).toFixed(1));
+            CANDIDATES.C1.currentShare = Number((CANDIDATES.C1.currentShare + diff).toFixed(1));
+
+            tickCounter += 1;
+            timeSeriesHistory.push({
+                tick: tickCounter,
+                C1: CANDIDATES.C1.currentShare,
+                C2: CANDIDATES.C2.currentShare,
+                C3: CANDIDATES.C3.currentShare,
+                C4: CANDIDATES.C4.currentShare
+            });
+            if (timeSeriesHistory.length > 25) {
+                timeSeriesHistory.shift();
+            }
+        }
+
+        function ingestPost(postObj, isManual = false) {
+            const nlp = analyzeSpanishSentiment(postObj.text);
+            const cand = CANDIDATES[postObj.cand];
+
+            cand.mentions += 1;
+            cand.sumScore += nlp.compound;
+            if (nlp.label === "POS") cand.pos += 1;
+            else if (nlp.label === "NEG") cand.neg += 1;
+            else cand.neu += 1;
+
+            const enrichedPost = {
+                id: "POST-" + (totalIngestedCount + 101),
+                timestamp: new Date().toLocaleTimeString("es-PE", { hour12: false }),
+                candId: postObj.cand,
+                candName: cand.name,
+                candColor: cand.color,
+                region: postObj.region,
+                source: postObj.source,
+                user: postObj.user || "@ciudadano_verificado",
+                text: postObj.text,
+                compound: nlp.compound,
+                label: nlp.label,
+                isManual
+            };
+
+            totalIngestedCount += 1;
+            allProcessedPosts.unshift(enrichedPost);
+            if (allProcessedPosts.length > 80) {
+                allProcessedPosts.pop();
+            }
+
+            recalculateElectoralShares();
+            renderAll();
+        }
+
+        // =========================================================================
+        // 4. RENDERIZADO DE UI, TARJETAS, GRÁFICO CANVAS Y FEED
+        // =========================================================================
+        function renderKPIs() {
+            const totalPosts = allProcessedPosts.length;
+            document.getElementById("kpiTotalPosts").textContent = totalIngestedCount.toLocaleString("es-PE");
+
+            let posCount = 0, negCount = 0, sumComp = 0;
+            allProcessedPosts.forEach((p) => {
+                sumComp += p.compound;
+                if (p.label === "POS") posCount++;
+                else if (p.label === "NEG") negCount++;
+            });
+
+            const avgComp = totalPosts > 0 ? sumComp / totalPosts : 0;
+            const sign = avgComp >= 0 ? "+" : "";
+            const compEl = document.getElementById("kpiAvgCompound");
+            compEl.textContent = `${sign}${avgComp.toFixed(3)}`;
+            compEl.style.color = avgComp >= 0.08 ? "var(--pos-color)" : (avgComp <= -0.08 ? "var(--neg-color)" : "var(--neu-color)");
+
+            const posPct = totalPosts > 0 ? (posCount / totalPosts) * 100 : 0;
+            const negPct = totalPosts > 0 ? (negCount / totalPosts) * 100 : 0;
+            document.getElementById("kpiPosPct").textContent = `${posPct.toFixed(1)}%`;
+            document.getElementById("kpiNegPct").textContent = `${negPct.toFixed(1)}%`;
+
+            // Líder actual
+            const sortedCands = Object.values(CANDIDATES).sort((a, b) => b.currentShare - a.currentShare);
+            const leader = sortedCands[0];
+            const runnerUp = sortedCands[1];
+            document.getElementById("kpiLeaderName").textContent = leader.name;
+            document.getElementById("kpiLeaderShare").textContent =
+                `${leader.currentShare.toFixed(1)}% (+${(leader.currentShare - runnerUp.currentShare).toFixed(1)} pts vs. 2° lugar)`;
+        }
+
+        function renderCandidateCards() {
+            const container = document.getElementById("candidatesContainer");
+            const sorted = Object.values(CANDIDATES).sort((a, b) => b.currentShare - a.currentShare);
+
+            container.innerHTML = sorted.map((c, idx) => {
+                const totalM = Math.max(c.mentions, 1);
+                const pPos = ((c.pos / totalM) * 100).toFixed(0);
+                const pNeu = ((c.neu / totalM) * 100).toFixed(0);
+                const pNeg = ((c.neg / totalM) * 100).toFixed(0);
+
+                return `
+                    <article class="cand-card" style="border-top-color: ${c.color};" aria-label="Candidato ${c.name}, intención estimada ${c.currentShare}%">
+                        <div class="cand-header">
+                            <div>
+                                <div class="cand-name">#${idx + 1} ${c.name}</div>
+                                <div class="cand-party">${c.party}</div>
+                            </div>
+                            <div class="cand-share-badge" style="color:${c.color};border-color:${c.color};">
+                                ${c.currentShare.toFixed(1)}%
+                            </div>
+                        </div>
+
+                        <div class="progress-track" role="progressbar" aria-valuenow="${c.currentShare}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-fill" style="width:${Math.min(100, c.currentShare * 2.2)}%; background:${c.color};"></div>
+                        </div>
+
+                        <div class="sentiment-triplet">
+                            <span class="sent-pill sent-pos" title="Sentimiento Positivo">🟢 +${pPos}%</span>
+                            <span class="sent-pill sent-neu" title="Sentimiento Neutral">🟡 ${pNeu}%</span>
+                            <span class="sent-pill sent-neg" title="Sentimiento Negativo">🔴 -${pNeg}%</span>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        function renderTrendChart() {
+            const canvas = document.getElementById("trendChart");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            const padL = 46, padR = 22, padT = 18, padB = 28;
+            const plotW = w - padL - padR;
+            const plotH = h - padT - padB;
+
+            const minY = 12;
+            const maxY = 38;
+
+            // Líneas horizontales de grilla
+            ctx.strokeStyle = "rgba(148, 163, 184, 0.18)";
+            ctx.lineWidth = 1;
+            ctx.font = "600 11px 'JetBrains Mono', monospace";
+            ctx.fillStyle = "#94a3b8";
+
+            for (let yVal = 15; yVal <= 35; yVal += 5) {
+                const yPx = padT + plotH - ((yVal - minY) / (maxY - minY)) * plotH;
+                ctx.beginPath();
+                ctx.moveTo(padL, yPx);
+                ctx.lineTo(w - padR, yPx);
+                ctx.stroke();
+                ctx.fillText(`${yVal}%`, 8, yPx + 4);
+            }
+
+            if (timeSeriesHistory.length < 2) return;
+
+            // Dibujar serie por cada candidato
+            Object.values(CANDIDATES).forEach((cand) => {
+                ctx.strokeStyle = cand.color;
+                ctx.lineWidth = 2.8;
+                ctx.beginPath();
+
+                timeSeriesHistory.forEach((pt, idx) => {
+                    const xPx = padL + (idx / (timeSeriesHistory.length - 1)) * plotW;
+                    const val = Math.max(minY, Math.min(maxY, pt[cand.id]));
+                    const yPx = padT + plotH - ((val - minY) / (maxY - minY)) * plotH;
+                    if (idx === 0) ctx.moveTo(xPx, yPx);
+                    else ctx.lineTo(xPx, yPx);
+                });
+                ctx.stroke();
+
+                // Punto final destacado
+                const lastPt = timeSeriesHistory[timeSeriesHistory.length - 1];
+                const lastVal = Math.max(minY, Math.min(maxY, lastPt[cand.id]));
+                const lastX = padL + plotW;
+                const lastY = padT + plotH - ((lastVal - minY) / (maxY - minY)) * plotH;
+
+                ctx.fillStyle = cand.color;
+                ctx.beginPath();
+                ctx.arc(lastX, lastY, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Leyenda inferior
+            const legendEl = document.getElementById("chartLegend");
+            legendEl.innerHTML = Object.values(CANDIDATES).map((c) => `
+                <div class="legend-item">
+                    <span class="legend-swatch" style="background:${c.color};"></span>
+                    <span>${c.name}: <strong>${c.currentShare.toFixed(1)}%</strong></span>
+                </div>
+            `).join("");
+        }
+
+        function renderFeed() {
+            const candFilter = document.getElementById("filterCandidate").value;
+            const sentFilter = document.getElementById("filterSentiment").value;
+            const container = document.getElementById("liveFeedContainer");
+
+            const filtered = allProcessedPosts.filter((p) => {
+                const okCand = candFilter === "ALL" || p.candId === candFilter;
+                const okSent = sentFilter === "ALL" || p.label === sentFilter;
+                return okCand && okSent;
+            });
+
+            container.innerHTML = filtered.slice(0, 14).map((p) => {
+                const cls = p.label === "POS" ? "post-pos" : (p.label === "NEG" ? "post-neg" : "post-neu");
+                const pillCls = p.label === "POS" ? "sent-pos" : (p.label === "NEG" ? "sent-neg" : "sent-neu");
+                const icon = p.label === "POS" ? "🟢 POSITIVO" : (p.label === "NEG" ? "🔴 NEGATIVO" : "🟡 NEUTRAL");
+                const sign = p.compound >= 0 ? "+" : "";
+                const manualBadge = p.isManual ? `<span class="tag-badge" style="background:#1e3a8a;color:#93c5fd;">INYECTADO MANUAL</span>` : "";
+
+                return `
+                    <article class="post-item ${cls}">
+                        <div class="post-meta">
+                            <span><strong class="post-author">${p.user}</strong> · ${p.source} · ${p.region}</span>
+                            <span>🕒 ${p.timestamp}</span>
+                        </div>
+                        <div class="post-text">${highlightTokensHTML(p.text)}</div>
+                        <div class="post-tags">
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                <span class="tag-badge" style="background:rgba(255,255,255,0.06);color:${p.candColor};border:1px solid ${p.candColor};">
+                                    ${p.candName}
+                                </span>
+                                ${manualBadge}
+                            </div>
+                            <span class="tag-badge ${pillCls}">
+                                ${icon} (VADER: ${sign}${p.compound.toFixed(3)})
+                            </span>
+                        </div>
+                    </article>
+                `;
+            }).join("");
+        }
+
+        function renderAll() {
+            renderKPIs();
+            renderCandidateCards();
+            renderTrendChart();
+            renderFeed();
+        }
+
+        // =========================================================================
+        // 5. MOTOR DE SIMULACIÓN Y EVENTOS DE INTERACCIÓN (OPERABILIDAD ISO 25010)
+        // =========================================================================
+        function stepSimulation() {
+            const template = STREAM_CORPUS[corpusCursor % STREAM_CORPUS.length];
+            corpusCursor += 1;
+            ingestPost(template, false);
+        }
+
+        function startStreamLoop() {
+            if (timerHandle) clearInterval(timerHandle);
+            timerHandle = setInterval(() => {
+                if (isStreaming) {
+                    stepSimulation();
+                }
+            }, streamIntervalMs);
+        }
+
+        function toggleStreamState() {
+            isStreaming = !isStreaming;
+            const btn = document.getElementById("btnToggleStream");
+            const badge = document.getElementById("liveStatusBadge");
+            const txt = document.getElementById("liveStatusText");
+
+            if (isStreaming) {
+                btn.innerHTML = "⏸️ Pausar Stream";
+                btn.setAttribute("aria-pressed", "true");
+                badge.classList.remove("paused");
+                txt.textContent = "INGESTA EN VIVO (ACTIVA)";
+            } else {
+                btn.innerHTML = "▶️ Reanudar Stream";
+                btn.setAttribute("aria-pressed", "false");
+                badge.classList.add("paused");
+                txt.textContent = "INGESTA EN PAUSA";
+            }
+        }
+
+        // Inicialización al cargar DOM
+        window.addEventListener("DOMContentLoaded", () => {
+            // Sembrar 8 publicaciones iniciales para poblar las series de tiempo
+            for (let i = 0; i < 8; i++) {
+                stepSimulation();
+            }
+            startStreamLoop();
+
+            // Controles de Operabilidad
+            document.getElementById("btnToggleStream").addEventListener("click", toggleStreamState);
+
+            document.getElementById("speedSelect").addEventListener("change", (e) => {
+                streamIntervalMs = Number(e.target.value);
+                startStreamLoop();
+            });
+
+            document.getElementById("btnContrast").addEventListener("click", (e) => {
+                document.body.classList.toggle("high-contrast");
+                const isHigh = document.body.classList.contains("high-contrast");
+                e.currentTarget.setAttribute("aria-pressed", String(isHigh));
+            });
+
+            // Filtros del feed
+            document.getElementById("filterCandidate").addEventListener("change", renderFeed);
+            document.getElementById("filterSentiment").addEventListener("change", renderFeed);
+
+            // Prevención de Errores en el formulario PLN (Validación en tiempo real)
+            const txtArea = document.getElementById("customPostText");
+            const counterEl = document.getElementById("charCounter");
+            const feedbackEl = document.getElementById("validationFeedback");
+
+            txtArea.addEventListener("input", () => {
+                const len = txtArea.value.trim().length;
+                counterEl.textContent = `${txtArea.value.length} / 280 caracteres`;
+                if (len > 0 && len < 12) {
+                    txtArea.classList.add("input-error");
+                    feedbackEl.textContent = "⚠️ Prevención de errores: Ingresa al menos 12 caracteres con contenido semántico válido.";
+                    feedbackEl.className = "validation-msg error";
+                } else {
+                    txtArea.classList.remove("input-error");
+                    feedbackEl.textContent = "";
+                    feedbackEl.className = "validation-msg";
+                }
+            });
+
+            document.getElementById("btnLoadSample").addEventListener("click", () => {
+                txtArea.value = "Excelente propuesta anticorrupción y de empleo joven; muy firme y transparente frente a la inseguridad.";
+                counterEl.textContent = `${txtArea.value.length} / 280 caracteres`;
+                txtArea.classList.remove("input-error");
+                feedbackEl.textContent = "✨ Ejemplo cargado. Presiona 'Analizar con PLN e Inyectar al Stream'.";
+                feedbackEl.className = "validation-msg success";
+            });
+
+            document.getElementById("customPostForm").addEventListener("submit", (e) => {
+                e.preventDefault();
+                const rawText = txtArea.value.trim();
+                if (rawText.length < 12) {
+                    txtArea.classList.add("input-error");
+                    feedbackEl.textContent = "❌ Error bloqueado: La publicación es demasiado corta (< 12 caracteres) para el motor PLN.";
+                    feedbackEl.className = "validation-msg error";
+                    txtArea.focus();
+                    return;
+                }
+
+                const candId = document.getElementById("inputCandidate").value;
+                const region = document.getElementById("inputRegion").value;
+                const source = document.getElementById("inputSource").value;
+
+                ingestPost({
+                    cand: candId,
+                    region,
+                    source,
+                    user: "@auditor_iso25010",
+                    text: rawText
+                }, true);
+
+                const res = analyzeSpanishSentiment(rawText);
+                feedbackEl.textContent = `✅ Publicación inyectada con éxito -> Polaridad: ${res.label} (Score VADER-ES: ${res.compound >= 0 ? "+" : ""}${res.compound})`;
+                feedbackEl.className = "validation-msg success";
+                txtArea.value = "";
+                counterEl.textContent = "0 / 280 caracteres";
+            });
+
+            // Modales (Ayuda y Confirmación de Reinicio)
+            const helpModal = document.getElementById("helpModal");
+            const resetModal = document.getElementById("resetModal");
+
+            document.getElementById("btnHelpModal").addEventListener("click", () => helpModal.classList.add("active"));
+            document.getElementById("btnCloseHelp").addEventListener("click", () => helpModal.classList.remove("active"));
+
+            document.getElementById("btnResetModal").addEventListener("click", () => resetModal.classList.add("active"));
+            document.getElementById("btnCancelReset").addEventListener("click", () => resetModal.classList.remove("active"));
+            document.getElementById("btnConfirmReset").addEventListener("click", () => {
+                allProcessedPosts = [];
+                totalIngestedCount = 0;
+                timeSeriesHistory = [];
+                tickCounter = 0;
+                Object.values(CANDIDATES).forEach((c) => {
+                    c.mentions = 10;
+                    c.pos = 5;
+                    c.neu = 3;
+                    c.neg = 2;
+                    c.sumScore = 1.5;
+                    c.currentShare = c.priorShare;
+                });
+                for (let i = 0; i < 4; i++) stepSimulation();
+                resetModal.classList.remove("active");
+            });
+        });
+    </script>
+</body>
+</html>
